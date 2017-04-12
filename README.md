@@ -1,1 +1,1 @@
-# 基于React-Redux-Antd-Blueprint开发的管理后台
+# 基于React-Redux-Antd-Webpack-ES6开发的管理后台
