@@ -1,25 +1,14 @@
 {
   "presets": [
-    ["es2015", { "modules": false }],
-    "react",
-    "airbnb"
+    ["env", { "modules": false }],
+    "stage-2"
   ],
-  "plugins": [
-    "transform-decorators-legacy",
-    "transform-object-rest-spread",
-    "react-hot-loader/babel",
-    ["import", {
-      "libraryName": "antd",
-      "style": false
-    }]
-  ],
+  "plugins": ["transform-runtime"],
+  "comments": false,
   "env": {
     "test": {
-      "plugins": [
-        "transform-decorators-legacy",
-        "transform-object-rest-spread",
-        "istanbul"
-      ]
+      "presets": ["env", "stage-2"],
+      "plugins": [ "istanbul" ]
     }
   }
 }
