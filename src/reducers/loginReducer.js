@@ -1,33 +1,41 @@
+import * as AppAction from '../actions/AppAction';
 
-//EssayList初始化数据的Reducer
-export function reducer_login(state={
-    modal_visible:false,
-    timestamp:null,
-    confirmloading:false,
-    validateStatus_user_pas:null,
-    validateStatus_cap:null,
-},action){
-    switch (action.type){
-        case "LOGIN_MODAL_VISIBLE":
-            return Object.assign({},state,{
-                modal_visible:action.payload
+const defaultState = {
+    showLogin: false,
+    loginErrorMessage: null,
+    isLogining: false,
+    timestamp: null
+}
+
+export default function appReducer(state = defaultState, action) {
+    switch (action.type) {
+        case AppAction.AT_UPDATE_SHOW_LOGIN:
+            let modifies = {
+                showLogin: action.payload
+            }
+
+            if (!action.payload) {
+                modifies.loginErrorMessage = null;
+                modifies.isLogining = false
+            }
+
+            return Object.assign({}, state, modifies);
+
+        case AppAction.AT_UPDATE_LOGIN_ERROR_MESSAGE:
+            return Object.assign({}, state, {
+                loginErrorMessage: action.payload
             });
-        case "LOGIN_TIMESTAMP":
-            return Object.assign({},state,{
+
+        case AppAction.AT_UPDATE_LOGING:
+            return Object.assign({}, state, {
+                isLogining: action.payload
+            });
+
+        case AppAction.AT_UPDATE_LOGIN_UPDAET_TIMESTAMP:
+            return Object.assign({}, state, {
                 timestamp: action.payload
             });
-        case "LOGIN_MODAL_CONFIRMLOADING":
-            return Object.assign({},state,{
-                confirmloading:action.payload
-            });
-        case "LOGIN_MODAL_VALIDATESTATUS_US_PAS":
-            return Object.assign({},state,{
-                validateStatus_user_pas:action.payload
-            });
-        case "LOGIN_MODAL_VALIDATESTATUS_CAP":
-            return Object.assign({},state,{
-                validateStatus_cap:action.payload
-            });   
+
         default:
             return state;
     }

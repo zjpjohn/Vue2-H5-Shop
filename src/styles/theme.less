@@ -1,0 +1,62 @@
+@import "~antd/lib/style/index.less";
+@import "~antd/lib/table/style/index.less";
+@import "~antd/lib/pagination/style/index.less";
+@import "~antd/lib/spin/style/index.less";
+@import "~antd/lib/checkbox/style/index.less";
+@import "~antd/lib/select/style/index.less";
+@import "~antd/lib/dropdown/style/index.less";
+
+@standard-space: 8px;
+@search-input-width: 200px;
+
+@primary-color          : #137cbd;
+@background-color-base  : #F5F8FA;
+@border-radius-base     : 2px;
+@border-radius-sm       : 2px;
+
+.pt-popover.pt-popover-content-sizing .pt-popover-content {
+    padding: 0;
+}
+
+.navMenu.pt-menu,
+.confirmMenu.pt-menu,
+.imagePreviewMenu.pt-menu {
+    min-width: auto;
+}
+.ant-table-body>table{
+    font-size: 16px !important;
+}
+.ant-table-thead > tr > th {
+    background: @background-color-base;
+}
+
+.ant-table-thead > tr > th, .ant-table-tbody > tr > td {
+    padding: @standard-space;
+}
+
+.pt-dialog {
+    border-radius: @border-radius-base;
+    background: white;
+}
+
+.pt-spinner:not(.pt-svg-spinner) {
+    display: block;
+}
+
+.pt-spinner.pt-intent-primary .pt-spinner-head {
+    stroke: #ffffff;
+}
+
+.pt-popover.pt-popover-content-sizing .pt-popover-content {
+    max-width: none;
+}
+
+.formItem {
+    .pt-popover-target {
+        display: block;
+    }
+}
+
+label.pt-label .pt-input, label.pt-label .pt-select {
+    width: @search-input-width;
+}

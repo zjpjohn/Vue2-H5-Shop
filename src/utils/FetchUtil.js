@@ -1,27 +1,48 @@
-import interceptor from '../components/common/NetInterceptor';
 import 'whatwg-fetch';
-import AuthorizeError from '../components/common/AuthorizeError';
-import appPackage from '../../package.json';
+import interceptor from '../common/NetInterceptor';
+import AuthorizeError from '../common/AuthorizeError';
 import config from 'config';
 
-//登录军团
-
-
-window._use_proxy = config.useProxy;//appPackage.devConfig.useProxy;
-var API_HOST = getApiHost();
-var API_BASE_PATH = getApiBsePath();
+export const API_HOST = getApiHost();
+export const API_BASE_PATH = getApiBsePath();
 
 function getApiHost() {
     return window.location.host;
 }
 
 function getApiBsePath() {
-    if (window._use_proxy) {
+    if (config.useProxy) {
         return "/api/";
     } else {
+        if (window.location.pathname.lastIndexOf("index.html") > 0) {
+            return location.pathname.substring(0, window.location.pathname.lastIndexOf("index.html"))
+        }
+
         return window.location.pathname;
     }
 }
+
+export function postForLogin(api, username, password, captcha) {
+    api = applyBasePath(api, API_HOST + API_BASE_PATH, false);
+
+    const formData = new FormData();
+    formData.append("captcha", captcha);
+
+    return fetch(api, {
+        method: 'post',
+        credentials: 'include',
+        headers: {
+            'X-Username': username,
+            'X-Password': password
+        },
+        body: formData
+    }).then(res => {
+        const token = res.headers.get('X-Auth-Token');
+        saveToken(token);
+        return res.json();
+    }).then(interceptor);
+}
+
 /**
  * 发送一个获取JSON的GET请求
  * @param {string} api 不包含host与basePath的url，可包含{pathName}形式的path参数
@@ -29,6 +50,7 @@ function getApiBsePath() {
  * @param {Object} pathValues 可选
  * @param {boolean} https 可选
  * @returns {Promise}
+ * listData.pager, listData.sorter, listData.filters, listData.search
  */
 export function getJson(api, query, pathValues = null, withInterceptor = true, https = false) {
     api = applyBasePath(api, API_HOST + API_BASE_PATH, https);
@@ -77,6 +99,7 @@ export function getJson(api, query, pathValues = null, withInterceptor = true, h
  */
 export function postJson(api, data = {}, pathValues = null, withInterceptor = true, https = false) {
     api = applyBasePath(api, API_HOST + API_BASE_PATH, https);
+    api = applyQuery(api, null);
     api = applyPathValues(api, pathValues);
 
     const responseBean = fetch(api, {
@@ -124,6 +147,7 @@ export function postJson(api, data = {}, pathValues = null, withInterceptor = tr
  */
 export function postForm(api, fieldValues, pathValues = null, withInterceptor = true, https = false) {
     api = applyBasePath(api, API_HOST + API_BASE_PATH, https);
+    api = applyQuery(api, null);
     api = applyPathValues(api, pathValues);
 
     const responseBean = fetch(api, {
@@ -164,6 +188,7 @@ export function postForm(api, fieldValues, pathValues = null, withInterceptor = 
  */
 export function postJsonForDownload(api, data = {}, filename, pathValues = null, https = false) {
     api = applyBasePath(api, API_HOST + API_BASE_PATH, https);
+    api = applyQuery(api, null);
     api = applyPathValues(api, pathValues);
     return fetch(api, {
         method: 'POST',
@@ -193,7 +218,7 @@ export function postJsonForDownload(api, data = {}, filename, pathValues = null,
  * @param {boolean} https
  * @returns {string}
  */
-function applyBasePath(api, basePath, https=false) {
+export function applyBasePath(api, basePath=(API_HOST + API_BASE_PATH), https=false) {
     if (typeof api !== 'string') {
         throw new Error('api must be string');
     }
@@ -224,7 +249,12 @@ function applyBasePath(api, basePath, https=false) {
  * @param {Object} query
  * @returns {string}
  */
-function applyQuery(api, query) {
+function applyQuery(api, query, addProjectParam = true) {
+    if (addProjectParam) {
+        const project = window._selectProjectKey || 'default';
+        query = Object.assign({}, query, {project});
+    }
+
     if (!query) {
         return api;
     }
@@ -280,6 +310,7 @@ function createFormData(fieldsValue) {
     let formData = new FormData();
 
     for (let key in fieldsValue) {
+
         if (fieldsValue.hasOwnProperty(key)) {
             const value = fieldsValue[key];
 
@@ -298,6 +329,10 @@ function createFormData(fieldsValue) {
     return formData;
 }
 
+function saveToken(token) {
+    window.localStorage.setItem("_TOKEN_", token);
+}
+
 function addTokenToHeaders(headers) {
     const token = window.localStorage.getItem("_TOKEN_");
 
@@ -307,63 +342,3 @@ function addTokenToHeaders(headers) {
 
     return Object.assign(headers, {"X-Auth-Token": token});
 }
-
-/**
- * @param {string} api
- * @param {string} basePath
- * @param {boolean} https
- * @returns {string}
- */
-export function applyBasePath(api, basePath=(API_HOST + API_BASE_PATH), https=false) {
-    if (typeof api !== 'string') {
-        throw new Error('api must be string');
-    }
-
-    if (typeof basePath !== 'string') {
-        throw new Error('basePath must be string');
-    }
-
-    const testIsFullPath = /.*:\/\/.*/;
-    if (testIsFullPath.test(api)) {
-        return api;
-    }
-
-    const patten1 = /.*\/$/;
-    const patten2 = /^\/.*/;
-
-    if (patten1.test(basePath) && patten2.test(api)) {
-        api = api.substring(1);
-    }
-
-    let proto = https ? 'https://' : 'http://';
-
-    return proto + basePath + api;
-}
-
-//登录
-export function postForLogin(api, username, password, captcha) {
-    api = applyBasePath(api, API_HOST + API_BASE_PATH, false);
-
-    const formData = new FormData();
-    formData.append("captcha", captcha);
-
-    return fetch(api, {
-        method: 'post',
-        credentials: 'include',
-        headers: {
-            'X-Username': username,
-            'X-Password': password
-        },
-        body: formData
-    }).then(res => {
-        const token = res.headers.get('X-Auth-Token');
-        saveToken(token);
-        return res.json();
-    }).then(interceptor);
-}
-
-function saveToken(token) {
-    window.localStorage.setItem("_TOKEN_", token);
-}
-
-
